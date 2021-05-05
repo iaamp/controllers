@@ -28,7 +28,8 @@
 	<node name="safe_anafi" pkg="controllers" type="safe_anafi" output="screen" args=""/>
 	<!-- Run in the terminal `xset r rate 10 40` to eliminate the delay after the first press of a key.
 	Later, run in the terminal `xset r rate 240 40` to reset the default delay. -->
-	<node name="teleop_key" pkg="controllers" type="teleop_key" output="screen" args=""/>
+	<!-- <node name="teleop_key" pkg="controllers" type="teleop_key" output="screen" args=""/> -->
+    <include file="$(find controllers)/launch/erl_bridge.launch" />
 	<node name="trajectory" pkg="controllers" type="trajectory" output="screen" args="/home/andriy/catkin_ws/src/controllers/policy/waypoints.txt"/>
 
 	<!-- include file="$(find controllers)/launch/$(arg controller).launch"/ -->

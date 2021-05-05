@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0...3.16)
 project(controllers)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
+
+include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
+get_filename_component(extern "extern"
+    REALPATH BASE_DIR "${CMAKE_CURRENT_LIST_DIR}")
+set(FETCHCONTENT_BASE_DIR ${extern})
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -17,6 +23,8 @@ find_package(catkin REQUIRED COMPONENTS
   roslib
   sensor_msgs
   tf
+  eigen_conversions
+  tf_conversions
   message_generation
   olympe_bridge
 )
@@ -27,6 +35,34 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(gazebo REQUIRED)
 find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED)
+find_package(Threads REQUIRED)
+find_package(Boost 1.54 COMPONENTS system thread coroutine context REQUIRED)
+find_package(OpenSSL REQUIRED)
+find_package(robotp2p 0.3.0 REQUIRED)
+find_package(asio REQUIRED)
+find_package(haptic_udp REQUIRED)
+
+# Get json
+find_package(json)
+if(json_FOUND)
+    messsage(STATUS "Found json")
+else()
+    message(STATUS "json not found: getting it now")
+    FetchContent_Declare(
+        json
+        GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent.git
+        GIT_TAG v3.7.3)
+    # FetchContent_MakeAvailable(json)
+    FetchContent_GetProperties(json)
+    if(NOT json_POPULATED)
+        message("not json populated")
+        FetchContent_Populate(json)
+        add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+        message("json_SOURCE_DIR: ${json_SOURCE_DIR}")
+        message("json_BINARY_DIR: ${json_BINARY_DIR}")
+    endif()
+endif()
+message("json include dirs: ${json_INCLUDE_DIRS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -127,9 +163,11 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include
-  "/opt/ros/kinetic/include"
-  ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
+    include
+    "/opt/ros/kinetic/include"
+    ${catkin_INCLUDE_DIRS} ${GAZEBO_INCLUDE_DIRS} ${Eigen_INCLUDE_DIRS}
+    ${haptic_udp_INCLUDE_DIRS}
+    ${asio_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -221,6 +259,19 @@ add_dependencies(motor_failure_pub ${PROJECT_NAME}_gencfg)
 add_executable(data_record src/data_record.cpp)
 target_link_libraries(data_record ${catkin_LIBRARIES})
 add_dependencies(data_record ${PROJECT_NAME}_gencfg)
+
+add_executable(erl_bridge_main
+    src/erl_bridge.cpp
+    src/erl_bridge_main.cpp)
+target_link_libraries(erl_bridge_main
+    ${catkin_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
+    robotp2p::robotp2p
+    ${haptic_udp_LIBRARIES}
+    ${Boost_LIBRARIES}
+    ${OPENSSL_LIBRARIES}
+    nlohmann_json::nlohmann_json
+)
 
 #############
 ## Install ##

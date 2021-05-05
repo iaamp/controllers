@@ -1,0 +1,31 @@
+<launch>
+    <group ns="controllers">
+        <node pkg="controllers" type="erl_bridge_main" name="erl_bridge" output="screen">
+            <param name="input_topic" value="/keyboard/command_move" />
+            <param name="camera_topic" value="/keyboard/command_camera" />
+            <param name="feedback_topic" value="/feedback_wrench" />
+
+            <!-- **************************** -->
+            <!-- *** messenger parameters *** -->
+            <!-- **************************** -->
+            <param name="messenger_name" value="drone follower" />
+            <param name="messenger_port" value="13000" />
+            <param name="leader_address" value="localhost" />
+            <param name="leader_port" value="13001" />
+
+            <!-- ***************************** -->
+            <!-- *** udp device parameters *** -->
+            <!-- ***************************** -->
+            <param name="is_leader" value="false" />
+            <!-- networking -->
+            <param name="this_port" value="53336" />
+            <param name="remote_id" value="localhost" />
+            <param name="remote_port" value="53335" />
+
+            <!-- loop rate [Hz] -->
+            <param name="rate" value="100" />
+
+            <param name="input_timeout_ms" value="100" />
+        </node>
+    </group>
+</launch>
