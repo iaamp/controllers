@@ -25,11 +25,16 @@ int main(int argc, char** argv)
     ros::Rate loop_rate(rate);
 
     asio::io_context io_context;
-    std::shared_ptr<haptic::HapticUdpFollower> drone_follower;
+    // std::shared_ptr<haptic::HapticUdpFollower> drone_follower;
+    std::shared_ptr<DroneFollower> drone_follower;
     drone_follower = std::make_shared<DroneFollower>(n);
     if (!drone_follower->Connect(io_context)) {
         std::cerr << "Follower could not connect with remote" << std::endl;
     }
+    // event_server = std::make_shared<MiosInterface::EventServer>(n);
+    // panda_client = std::make_shared<MiosInterface::PandaClient>(n);
+    // auto messenger = std::make_shared<MiosInterface::Messenger>(n, event_server, panda_client);
+    std::shared_ptr<ErlBridge> erl_bridge = std::make_shared<ErlBridge>(n, drone_follower);
     // erl_bridge = std::make_shared<ErlBridge>(n);
     // erl_bridge->start_bridge();
 

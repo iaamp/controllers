@@ -21,6 +21,8 @@ public:
     }
     void Receive();
     void publish_camera_msg(const geometry_msgs::Twist& camera_msg);
+    void start_recording();
+    void stop_recording();
 
 private:
     ros::NodeHandle node_handle_;
@@ -35,24 +37,29 @@ private:
     std::chrono::milliseconds input_timeout_ms_;
 };
 
-// class ErlBridge {
-// public:
-//     ErlBridge(ros::NodeHandle n);
+class ErlBridge {
+public:
+    ErlBridge(ros::NodeHandle n, std::shared_ptr<DroneFollower> follower);
 
-//     bool start_bridge();
-//     bool stop_bridge();
+    bool start_bridge();
+    bool stop_bridge();
 
-//     json arm(json args);
-//     json stop_motors(json args);
-//     json take_off(json args);
-//     json land(json args);
-//     json hover_at_position(json args);
-//     json start_recording(json args);
-//     json stop_recording(json args);
+    json arm(json args);
+    json stop_motors(json args);
+    json take_off(json args);
+    json land(json args);
+    json hover_at_position(json args);
+    json start_recording(json args);
+    json stop_recording(json args);
 
-// private:
-//     RobotP2P::Messenger messenger_;
-//     ros::NodeHandle node_handle_;
-//     ros::Publisher command_publisher_;
-//     std_msgs::Int8 command_;
-// };
+private:
+    std::string messenger_name_;
+    unsigned messenger_port_;
+    std::shared_ptr<RobotP2P::Messenger> messenger_;
+    ros::NodeHandle node_handle_;
+    std::shared_ptr<DroneFollower> follower_;
+
+    ros::Publisher command_pub_;
+    std::string command_topic_;
+    std_msgs::Int8 command_;
+};
