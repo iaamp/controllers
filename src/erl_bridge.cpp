@@ -40,7 +40,7 @@ void DroneFollower::Receive()
 
     // lets check that we actually received a new message
     if (! ((haptic_input_msg_.time_sec == input_time_sec_) && (haptic_input_msg_.time_nsec == input_time_nsec_))) {
-        std::cout << "new message DroneFollower::Receive" << std::endl;
+        // std::cout << "new message DroneFollower::Receive" << std::endl;
         last_input_ = std::chrono::high_resolution_clock::now();
 
         geometry_msgs::TwistStamped input_msg;
@@ -54,11 +54,13 @@ void DroneFollower::Receive()
         input_msg.twist.angular.z = haptic_input_msg_.wrench.torque.z();
         input_msg.header.stamp.sec = input_time_sec_;
         input_msg.header.stamp.nsec = input_time_nsec_;
-        input_pub_.publish(input_msg);
 
         camera_msg.angular.x = haptic_input_msg_.wrench.torque.x();
         camera_msg.angular.y = haptic_input_msg_.wrench.torque.y();
-        if (camera_msg.angular.x != 0 || camera_msg.angular.y != 0)
+        // if (camera_msg.angular.x != 0 || camera_msg.angular.y != 0)
+        if (input_msg.twist != input_msg_.twist)
+            input_pub_.publish(input_msg);
+        if (camera_msg != camera_msg_)
             camera_pub_.publish(camera_msg);
 
         input_msg_ = input_msg;
@@ -68,6 +70,7 @@ void DroneFollower::Receive()
         auto now = std::chrono::high_resolution_clock::now();
         if (now <= last_input_ + input_timeout_ms_) {
             input_pub_.publish(input_msg_);
+            // if (camera_msg_.angular.x != 0 || camera_msg_.angular.y != 0)
             camera_pub_.publish(camera_msg_);
         } else {
             // std::cout << "timeout DroneFollower::Receive" << std::endl;
@@ -187,7 +190,7 @@ json ErlBridge::start_recording(json args)
 
 json ErlBridge::stop_recording(json args)
 {
-    follower_->start_recording();
+    follower_->stop_recording();
     json result = {{"success", true}};
     return result;
 }
