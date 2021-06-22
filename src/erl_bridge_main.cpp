@@ -55,6 +55,7 @@ int main(int argc, char** argv)
         try {
             // drone_follower->Send(); // no feedback yet
             drone_follower->Receive();
+            drone_follower->Send(); // for timestamp only, to measure latency
         } catch (std::exception& e) {
             std::cerr << "Exception: " << e.what() << "\n";
         }

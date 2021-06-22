@@ -1,5 +1,6 @@
 #pragma once
 #include "ros/ros.h"
+#include <std_msgs/String.h>
 #include <std_msgs/Int8.h>
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Twist.h>
@@ -20,6 +21,7 @@ public:
         Stop();
     }
     void Receive();
+    void Send();
     void publish_camera_msg(const geometry_msgs::Twist& camera_msg);
     void start_recording();
     void stop_recording();
@@ -35,6 +37,9 @@ private:
     geometry_msgs::Twist camera_msg_;
     std::chrono::time_point<std::chrono::high_resolution_clock> last_input_;
     std::chrono::milliseconds input_timeout_ms_;
+    std::atomic<bool> timed_out_{true}; // if true, sending zero input, if false, sending actual input
+    std::atomic<bool> timeout_handled_{false};
+    geometry_msgs::Twist camera_zero_msg_;
 };
 
 class ErlBridge {
@@ -51,6 +56,7 @@ public:
     json hover_at_position(json args);
     json start_recording(json args);
     json stop_recording(json args);
+    void state_cb(const std_msgs::StringConstPtr& str);
 
 private:
     std::string messenger_name_;
@@ -62,4 +68,5 @@ private:
     ros::Publisher command_pub_;
     std::string command_topic_;
     std_msgs::Int8 command_;
+    ros::Subscriber state_sub_;
 };
